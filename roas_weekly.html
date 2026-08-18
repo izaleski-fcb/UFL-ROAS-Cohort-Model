@@ -1,0 +1,283 @@
+<title>UFL ROAS Cohort Model</title>
+<style>
+:root{
+  --bg:#f5f4f1; --surface:#ffffff; --surface-2:#eeece7;
+  --border:#dcd9d2; --text:#1c1a17; --text-dim:#6b665d;
+  --accent:#0f5c4f; --accent-soft:#dcece6;
+  --good:#16794f; --good-bg:#e3f3ea;
+  --warn:#9a6b0a; --warn-bg:#fbf0d9;
+  --bad:#b23b2e; --bad-bg:#fbe4e0;
+  --real:#1c1a17; --forecast:#8a8478;
+}
+:root:not([data-theme="light"]){
+  @media (prefers-color-scheme: dark){
+    --bg:#15140f; --surface:#1d1b16; --surface-2:#26241d;
+    --border:#39362c; --text:#eeece5; --text-dim:#a19a89;
+    --accent:#5fd6b8; --accent-soft:#1e3a32;
+    --good:#5fd6a0; --good-bg:#173425;
+    --warn:#e0b34a; --warn-bg:#3a2f14;
+    --bad:#e2685a; --bad-bg:#3a1e1a;
+    --real:#eeece5; --forecast:#726c5e;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15140f; --surface:#1d1b16; --surface-2:#26241d;
+  --border:#39362c; --text:#eeece5; --text-dim:#a19a89;
+  --accent:#5fd6b8; --accent-soft:#1e3a32;
+  --good:#5fd6a0; --good-bg:#173425;
+  --warn:#e0b34a; --warn-bg:#3a2f14;
+  --bad:#e2685a; --bad-bg:#3a1e1a;
+  --real:#eeece5; --forecast:#726c5e;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  font-size:14px; line-height:1.5; padding:28px 24px 60px;
+}
+.wrap{max-width:1320px; margin:0 auto;}
+h1{
+  font-size:22px; font-weight:700; letter-spacing:-0.01em; margin:0 0 4px;
+  text-wrap:balance;
+}
+.subtitle{color:var(--text-dim); font-size:13px; margin:0 0 20px;}
+.meta-row{
+  display:flex; gap:10px; flex-wrap:wrap; margin-bottom:22px;
+}
+.chip{
+  background:var(--surface); border:1px solid var(--border); border-radius:8px;
+  padding:8px 12px; font-size:12.5px; color:var(--text-dim);
+}
+.chip b{color:var(--text); font-weight:600;}
+.section-title{
+  font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;
+  color:var(--accent); margin:28px 0 10px;
+}
+.table-scroll{
+  overflow-x:auto; background:var(--surface); border:1px solid var(--border);
+  border-radius:10px;
+}
+table{
+  border-collapse:collapse; width:100%; min-width:920px;
+  font-variant-numeric:tabular-nums;
+}
+th,td{
+  padding:7px 10px; text-align:right; border-bottom:1px solid var(--border);
+  white-space:nowrap;
+}
+th{
+  font-size:11px; text-transform:uppercase; letter-spacing:0.04em;
+  color:var(--text-dim); font-weight:600; background:var(--surface-2);
+  position:sticky; top:0;
+}
+td:first-child, th:first-child{ text-align:left; }
+td:nth-child(2), th:nth-child(2){ text-align:left; color:var(--text-dim); }
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--surface-2);}
+.plat-ios td:first-child{border-left:3px solid var(--accent);}
+.plat-android td:first-child{border-left:3px solid var(--text-dim);}
+.cell-good{background:var(--good-bg); color:var(--good); font-weight:600; border-radius:5px;}
+.cell-warn{background:var(--warn-bg); color:var(--warn); font-weight:600; border-radius:5px;}
+.cell-bad{background:var(--bad-bg); color:var(--bad); font-weight:600; border-radius:5px;}
+.fc{color:var(--forecast); font-style:italic;}
+.spend{color:var(--text-dim); font-size:12.5px;}
+.legend{
+  display:flex; gap:16px; flex-wrap:wrap; margin-top:12px; font-size:12px; color:var(--text-dim);
+}
+.legend span{display:inline-flex; align-items:center; gap:6px;}
+.dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
+.d-good{background:var(--good);} .d-warn{background:var(--warn);} .d-bad{background:var(--bad);}
+.note{
+  background:var(--surface); border:1px solid var(--border); border-radius:10px;
+  padding:16px 18px; margin-top:22px; font-size:13px; color:var(--text-dim);
+}
+.note b{color:var(--text);}
+.note ul{margin:8px 0 0; padding-left:20px;}
+.note li{margin-bottom:5px;}
+code{
+  background:var(--surface-2); padding:1px 5px; border-radius:4px; font-size:12px;
+  color:var(--text);
+}
+.selector-row{
+  display:flex; align-items:center; gap:10px; margin-bottom:10px;
+}
+.selector-row label{font-size:12px; color:var(--text-dim); font-weight:600;}
+select.net-select{
+  background:var(--surface); color:var(--text); border:1px solid var(--border);
+  border-radius:7px; padding:6px 10px; font-size:13px; font-family:inherit;
+  cursor:pointer;
+}
+select.net-select:focus{outline:2px solid var(--accent); outline-offset:1px;}
+.users-col{color:var(--text-dim); font-size:12px;}
+</style>
+
+<div class="wrap">
+  <h1>UFL — ROAS Cohort Model</h1>
+  <p class="subtitle">iOS + Android, все источники (paid + organic). Soft Launch (15.04) → сегодня (18.08.26). Обновлено 18.08.26.</p>
+
+  <div class="meta-row">
+    <div class="chip"><b>18</b> недельных когорт</div>
+    <div class="chip">Таргет D360 — <b>85%</b></div>
+    <div class="chip">Неделя 12–18.08 теперь <b>полная</b> (была неполной 13.08)</div>
+    <div class="chip">D180 / D360 — прогноз по степенному закону <code>R(t)∝t^b</code></div>
+  </div>
+
+  <div class="section-title">Android</div>
+  <div class="selector-row">
+    <label for="sel-android">Сетка:</label>
+    <select class="net-select" id="sel-android" onchange="onNetChange('Android', this.value)"></select>
+  </div>
+  <div class="table-scroll">
+    <table id="tbl-android"></table>
+  </div>
+
+  <div class="section-title">iOS</div>
+  <div class="selector-row">
+    <label for="sel-ios">Сетка:</label>
+    <select class="net-select" id="sel-ios" onchange="onNetChange('iOS', this.value)"></select>
+  </div>
+  <div class="table-scroll">
+    <table id="tbl-ios"></table>
+  </div>
+
+  <div class="legend">
+    <span><span class="dot d-good"></span> ≥ таргета</span>
+    <span><span class="dot d-warn"></span> 50–99% таргета</span>
+    <span><span class="dot d-bad"></span> &lt; 50% таргета</span>
+    <span><i class="fc" style="font-style:italic">курсив</i> — прогноз, не факт</span>
+  </div>
+
+  <div class="note">
+    <b>Что изменилось с последнего обновления (13.08.26):</b>
+    <ul>
+      <li>Неделя 12–18.08 теперь полная (7 дней вместо 2) — её D0 больше не крайне шумный.</li>
+      <li>Степенной коэффициент b пересчитан на свежих D30/D60/D90: iOS b 0.244→<b>0.312</b>, Android b 0.324→<b>0.327</b>. D60→D180 iOS 1.31×→<b>1.41×</b>, Android 1.43×→<b>1.43×</b> (без изменений). D180→D360 iOS 1.19×→<b>1.24×</b>, Android 1.25×→<b>1.26×</b>.</li>
+      <li>D7→D30 и D30→D60 пересчитаны на всех неделях с новыми данными: несущественные изменения (в пределах 0.01-0.02×).</li>
+      <li>Прогнозы D180/D360 для незрелых недель (июль-август) выросли на несколько п.п. из-за более толстого хвоста в обновлённой кривой.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <b>Как читать:</b> прочерк — данные ещё не созрели до этого дня. Курсивные значения (D180/D360 всегда, иногда D60/D90) — прогноз через мультипликаторы, не измеренный факт. Целевые пороги на D360=85%: D0≥14% (And) / ≥16% (iOS), D7≥33%/36%, D30≥47%/50%, D60≥55%/57%, D180≥71%/73%.
+  </div>
+</div>
+
+<script>
+const TARGETS = {
+  Android: {D0:14, D1:21, D7:33, D30:47, D60:55, D90:60, D180:71, D360:85},
+  iOS:     {D0:16, D1:23, D7:36, D30:50, D60:57, D90:62, D180:73, D360:85},
+};
+
+const DATA = {
+  Android: [
+    {w:"15.04–21.04",spend:2856,last:"D90",D0:28.1,D1:50.5,D7:78.3,D30:135.3,D60:187.4,D90:235.4,D180:268.5,D360:337.0},
+    {w:"22.04–28.04",spend:9002,last:"D90",D0:8.8,D1:13.2,D7:23.3,D30:42.7,D60:53.7,D90:60.2,D180:76.9,D360:96.5},
+    {w:"29.04–05.05",spend:16312,last:"D90",D0:4.9,D1:7.6,D7:11.9,D30:17.1,D60:21.2,D90:23.6,D180:30.4,D360:38.1},
+    {w:"06.05–12.05",spend:18694,last:"D90",D0:3.9,D1:7.9,D7:14.3,D30:25.9,D60:29.4,D90:31.8,D180:42.1,D360:52.9},
+    {w:"13.05–19.05",spend:8470,last:"D90",D0:3.2,D1:4.7,D7:8.8,D30:13.7,D60:17.8,D90:19.9,D180:25.5,D360:32.0},
+    {w:"20.05–26.05",spend:12812,last:"D60",D0:92.2,D1:160.6,D7:272.7,D30:362.1,D60:412.0,D90:null,D180:590.5,D360:741.0},
+    {w:"27.05–02.06",spend:23518,last:"D60",D0:36.9,D1:53.8,D7:81.2,D30:109.3,D60:128.0,D90:null,D180:183.4,D360:230.2},
+    {w:"03.06–09.06",spend:35651,last:"D60",D0:15.5,D1:22.9,D7:35.9,D30:51.3,D60:59.3,D90:null,D180:84.9,D360:106.6},
+    {w:"10.06–16.06",spend:44047,last:"D60",D0:10.7,D1:15.6,D7:24.9,D30:36.5,D60:41.2,D90:null,D180:59.0,D360:74.1},
+    {w:"17.06–23.06",spend:45469,last:"D30",D0:6.8,D1:10.1,D7:19.1,D30:26.4,D60:null,D90:null,D180:44.0,D360:55.2},
+    {w:"24.06–30.06",spend:57079,last:"D30",D0:6.2,D1:9.1,D7:14.5,D30:22.9,D60:null,D90:null,D180:38.0,D360:47.7},
+    {w:"01.07–07.07",spend:37202,last:"D30",D0:7.9,D1:13.9,D7:20.9,D30:28.9,D60:null,D90:null,D180:48.1,D360:60.3},
+    {w:"08.07–14.07",spend:33004,last:"D30",D0:6.5,D1:10.6,D7:19.3,D30:27.3,D60:null,D90:null,D180:45.4,D360:57.0},
+    {w:"15.07–21.07",spend:29322,last:"D7",D0:8.2,D1:12.9,D7:20.9,D30:null,D60:null,D90:null,D180:49.1,D360:61.7},
+    {w:"22.07–28.07",spend:23179,last:"D7",D0:5.0,D1:7.8,D7:14.5,D30:null,D60:null,D90:null,D180:34.2,D360:43.0},
+    {w:"29.07–04.08",spend:25458,last:"D7",D0:5.0,D1:8.3,D7:12.9,D30:null,D60:null,D90:null,D180:30.5,D360:38.2},
+    {w:"05.08–11.08",spend:25154,last:"D1",D0:4.0,D1:6.8,D7:null,D30:null,D60:null,D90:null,D180:26.2,D360:32.9},
+    {w:"12.08–18.08",spend:14428,last:"D0",D0:7.9,D1:null,D7:null,D30:null,D60:null,D90:null,D180:48.4,D360:60.8}
+  ],
+  iOS: [
+    {w:"15.04–21.04",spend:917,last:"D90",D0:104.7,D1:172.6,D7:237.8,D30:343.1,D60:443.4,D90:512.7,D180:624.7,D360:775.2},
+    {w:"22.04–28.04",spend:5700,last:"D90",D0:34.6,D1:42.3,D7:54.3,D30:70.0,D60:80.1,D90:83.9,D180:112.9,D360:140.1},
+    {w:"29.04–05.05",spend:14148,last:"D90",D0:7.7,D1:10.7,D7:16.2,D30:23.6,D60:30.9,D90:32.6,D180:43.5,D360:54.0},
+    {w:"06.05–12.05",spend:17048,last:"D90",D0:8.2,D1:10.6,D7:15.5,D30:19.0,D60:20.7,D90:22.2,D180:29.2,D360:36.2},
+    {w:"13.05–19.05",spend:4480,last:"D90",D0:8.0,D1:11.0,D7:17.7,D30:26.6,D60:39.7,D90:50.6,D180:55.9,D360:69.4},
+    {w:"20.05–26.05",spend:6260,last:"D60",D0:252.1,D1:391.0,D7:596.4,D30:755.7,D60:830.0,D90:null,D180:1169.5,D360:1451.3},
+    {w:"27.05–02.06",spend:10835,last:"D60",D0:88.3,D1:125.8,D7:191.3,D30:258.9,D60:295.7,D90:null,D180:416.6,D360:517.0},
+    {w:"03.06–09.06",spend:20422,last:"D60",D0:44.1,D1:61.8,D7:94.4,D30:129.9,D60:152.2,D90:null,D180:214.4,D360:266.1},
+    {w:"10.06–16.06",spend:29238,last:"D60",D0:25.3,D1:39.4,D7:61.2,D30:88.0,D60:107.1,D90:null,D180:150.9,D360:187.3},
+    {w:"17.06–23.06",spend:56692,last:"D30",D0:10.7,D1:15.0,D7:23.8,D30:30.6,D60:null,D90:null,D180:49.8,D360:61.8},
+    {w:"24.06–30.06",spend:92437,last:"D30",D0:9.9,D1:13.3,D7:19.9,D30:28.0,D60:null,D90:null,D180:45.6,D360:56.5},
+    {w:"01.07–07.07",spend:61397,last:"D30",D0:11.3,D1:15.6,D7:23.0,D30:31.7,D60:null,D90:null,D180:51.7,D360:64.2},
+    {w:"08.07–14.07",spend:49062,last:"D30",D0:13.2,D1:18.4,D7:29.9,D30:46.7,D60:null,D90:null,D180:76.0,D360:94.4},
+    {w:"15.07–21.07",spend:42893,last:"D7",D0:12.2,D1:17.8,D7:29.3,D30:null,D60:null,D90:null,D180:65.2,D360:81.0},
+    {w:"22.07–28.07",spend:29699,last:"D7",D0:12.6,D1:18.3,D7:28.1,D30:null,D60:null,D90:null,D180:62.5,D360:77.6},
+    {w:"29.07–04.08",spend:18942,last:"D7",D0:8.7,D1:12.9,D7:23.9,D30:null,D60:null,D90:null,D180:53.2,D360:66.0},
+    {w:"05.08–11.08",spend:11743,last:"D1",D0:11.6,D1:18.7,D7:null,D30:null,D60:null,D90:null,D180:63.9,D360:79.3},
+    {w:"12.08–18.08",spend:10335,last:"D0",D0:10.8,D1:null,D7:null,D30:null,D60:null,D90:null,D180:53.6,D360:66.5}
+  ],
+};
+
+const NETWORK_DATA = {"iOS":{"googleadwords_int":[{"w":"22.04–28.04","spend":719,"users":12,"last":"D90","D0":null,"D1":null,"D7":null,"D30":0.0,"D60":0.0,"D90":3.0,"D180":0.0,"D360":0.0},{"w":"29.04–05.05","spend":1756,"users":45,"last":"D90","D0":null,"D1":null,"D7":null,"D30":0.0,"D60":0.0,"D90":0.0,"D180":0.0,"D360":0.0},{"w":"06.05–12.05","spend":225,"users":3,"last":"D0","D0":null,"D1":null,"D7":null,"D30":null,"D60":null,"D90":null,"D180":null,"D360":null},{"w":"20.05–26.05","spend":787,"users":268,"last":"D60","D0":0.1,"D1":0.2,"D7":0.2,"D30":0.4,"D60":0.5,"D90":null,"D180":0.7,"D360":0.9},{"w":"27.05–02.06","spend":864,"users":534,"last":"D60","D0":0.1,"D1":0.2,"D7":0.3,"D30":0.5,"D60":0.5,"D90":null,"D180":0.8,"D360":0.9},{"w":"03.06–09.06","spend":3,"users":10,"last":"D60","D0":0.9,"D1":0.9,"D7":0.9,"D30":0.9,"D60":0.9,"D90":null,"D180":1.3,"D360":1.6},{"w":"17.06–23.06","spend":350,"users":9,"last":"D30","D0":0.1,"D1":0.1,"D7":0.1,"D30":0.1,"D60":null,"D90":null,"D180":0.1,"D360":0.1},{"w":"24.06–30.06","spend":34,"users":1,"last":"D0","D0":null,"D1":null,"D7":null,"D30":null,"D60":null,"D90":null,"D180":null,"D360":null},{"w":"01.07–07.07","spend":35,"users":1,"last":"D0","D0":null,"D1":null,"D7":null,"D30":null,"D60":null,"D90":null,"D180":null,"D360":null},{"w":"08.07–14.07","spend":45,"users":1,"last":"D30","D0":0.2,"D1":0.2,"D7":0.2,"D30":0.2,"D60":null,"D90":null,"D180":0.3,"D360":0.4},{"w":"22.07–28.07","spend":1815,"users":3095,"last":"D7","D0":0.6,"D1":0.8,"D7":2.4,"D30":null,"D60":null,"D90":null,"D180":5.3,"D360":6.6},{"w":"29.07–04.08","spend":2326,"users":8677,"last":"D7","D0":1.7,"D1":2.3,"D7":3.1,"D30":null,"D60":null,"D90":null,"D180":6.8,"D360":8.4},{"w":"05.08–11.08","spend":2525,"users":7891,"last":"D1","D0":1.2,"D1":4.1,"D7":null,"D30":null,"D60":null,"D90":null,"D180":13.9,"D360":17.3},{"w":"12.08–18.08","spend":1989,"users":4787,"last":"D0","D0":1.4,"D1":null,"D7":null,"D30":null,"D60":null,"D90":null,"D180":6.8,"D360":8.4}],"Facebook Ads":[{"w":"15.04–21.04","spend":834,"users":2599,"last":"D90","D0":32.6,"D1":55.5,"D7":86.5,"D30":121.7,"D60":147.9,"D90":165.5,"D180":208.3,"D360":258.5},{"w":"22.04–28.04","spend":3476,"users":3093,"last":"D90","D0":4.5,"D1":7.1,"D7":12.3,"D30":14.6,"D60":17.1,"D90":18.6,"D180":24.1,"D360":29.9},{"w":"29.04–05.05","spend":7013,"users":3140,"last":"D90","D0":2.8,"D1":4.2,"D7":6.2,"D30":7.9,"D60":10.6,"D90":10.7,"D180":14.9,"D360":18.5},{"w":"06.05–12.05","spend":8406,"users":1926,"last":"D90","D0":2.6,"D1":2.7,"D7":4.3,"D30":4.7,"D60":4.7,"D90":4.7,"D180":6.6,"D360":8.2},{"w":"13.05–19.05","spend":1525,"users":231,"last":"D90","D0":1.8,"D1":2.0,"D7":2.0,"D30":2.8,"D60":2.8,"D90":2.8,"D180":4.0,"D360":4.9},{"w":"20.05–26.05","spend":2656,"users":5249,"last":"D60","D0":43.6,"D1":67.1,"D7":104.5,"D30":134.0,"D60":141.9,"D90":null,"D180":199.9,"D360":248.1},{"w":"27.05–02.06","spend":6613,"users":19853,"last":"D60","D0":37.7,"D1":55.2,"D7":90.5,"D30":123.6,"D60":139.1,"D90":null,"D180":195.9,"D360":243.1},{"w":"03.06–09.06","spend":10103,"users":9756,"last":"D60","D0":11.4,"D1":16.9,"D7":26.7,"D30":36.6,"D60":44.1,"D90":null,"D180":62.1,"D360":77.1},{"w":"10.06–16.06","spend":13822,"users":15777,"last":"D60","D0":8.2,"D1":11.8,"D7":20.2,"D30":28.1,"D60":33.7,"D90":null,"D180":47.4,"D360":58.9},{"w":"17.06–23.06","spend":28933,"users":35738,"last":"D30","D0":5.9,"D1":7.6,"D7":11.7,"D30":15.2,"D60":null,"D90":null,"D180":24.7,"D360":30.7},{"w":"24.06–30.06","spend":13695,"users":11181,"last":"D30","D0":3.6,"D1":5.5,"D7":9.4,"D30":12.5,"D60":null,"D90":null,"D180":20.4,"D360":25.3},{"w":"01.07–07.07","spend":10387,"users":5082,"last":"D30","D0":6.5,"D1":10.4,"D7":17.2,"D30":24.3,"D60":null,"D90":null,"D180":39.6,"D360":49.1},{"w":"08.07–14.07","spend":13740,"users":4984,"last":"D30","D0":13.9,"D1":19.7,"D7":30.0,"D30":45.9,"D60":null,"D90":null,"D180":74.7,"D360":92.7},{"w":"15.07–21.07","spend":12792,"users":4306,"last":"D7","D0":8.1,"D1":10.6,"D7":16.9,"D30":null,"D60":null,"D90":null,"D180":37.5,"D360":46.6},{"w":"22.07–28.07","spend":8671,"users":3920,"last":"D7","D0":4.9,"D1":8.5,"D7":14.3,"D30":null,"D60":null,"D90":null,"D180":31.8,"D360":39.5},{"w":"29.07–04.08","spend":880,"users":844,"last":"D7","D0":11.3,"D1":15.1,"D7":41.9,"D30":null,"D60":null,"D90":null,"D180":93.1,"D360":115.6},{"w":"05.08–11.08","spend":196,"users":109,"last":"D1","D0":32.3,"D1":32.7,"D7":null,"D30":null,"D60":null,"D90":null,"D180":112.0,"D360":139.0},{"w":"12.08–18.08","spend":1848,"users":835,"last":"D0","D0":5.7,"D1":null,"D7":null,"D30":null,"D60":null,"D90":null,"D180":28.3,"D360":35.1}],"applovin_int":[{"w":"24.06–30.06","spend":672,"users":48,"last":"D30","D0":6.8,"D1":7.1,"D7":13.4,"D30":17.9,"D60":null,"D90":null,"D180":29.1,"D360":36.1},{"w":"01.07–07.07","spend":2390,"users":195,"last":"D30","D0":2.6,"D1":2.8,"D7":3.5,"D30":5.4,"D60":null,"D90":null,"D180":8.8,"D360":10.9},{"w":"08.07–14.07","spend":9103,"users":1636,"last":"D30","D0":4.1,"D1":6.3,"D7":10.9,"D30":20.7,"D60":null,"D90":null,"D180":33.8,"D360":41.9},{"w":"15.07–21.07","spend":11516,"users":4155,"last":"D7","D0":2.1,"D1":3.2,"D7":8.0,"D30":null,"D60":null,"D90":null,"D180":17.7,"D360":22.0},{"w":"22.07–28.07","spend":7669,"users":2789,"last":"D7","D0":1.9,"D1":2.8,"D7":4.4,"D30":null,"D60":null,"D90":null,"D180":9.7,"D360":12.0},{"w":"29.07–04.08","spend":6996,"users":3328,"last":"D7","D0":1.8,"D1":2.7,"D7":5.5,"D30":null,"D60":null,"D90":null,"D180":12.3,"D360":15.3},{"w":"05.08–11.08","spend":1664,"users":949,"last":"D1","D0":0.4,"D1":0.6,"D7":null,"D30":null,"D60":null,"D90":null,"D180":2.2,"D360":2.7},{"w":"12.08–18.08","spend":0,"users":5,"last":"D0","D0":null,"D1":null,"D7":null,"D30":null,"D60":null,"D90":null,"D180":null,"D360":null}],"tiktokglobal_int":[{"w":"22.04–28.04","spend":1252,"users":1799,"last":"D90","D0":21.7,"D1":29.3,"D7":38.0,"D30":51.0,"D60":61.7,"D90":62.8,"D180":87.0,"D360":107.9},{"w":"29.04–05.05","spend":4041,"users":3887,"last":"D90","D0":5.9,"D1":9.2,"D7":16.4,"D30":22.4,"D60":23.5,"D90":25.2,"D180":33.1,"D360":41.1},{"w":"06.05–12.05","spend":7359,"users":3613,"last":"D90","D0":5.4,"D1":8.1,"D7":12.2,"D30":16.0,"D60":18.0,"D90":19.1,"D180":25.4,"D360":31.5},{"w":"13.05–19.05","spend":2327,"users":435,"last":"D90","D0":3.4,"D1":3.6,"D7":5.9,"D30":12.6,"D60":18.7,"D90":36.9,"D180":26.4,"D360":32.8},{"w":"20.05–26.05","spend":1823,"users":394,"last":"D60","D0":6.8,"D1":8.6,"D7":10.0,"D30":11.4,"D60":15.1,"D90":null,"D180":21.3,"D360":26.4},{"w":"27.05–02.06","spend":2093,"users":3821,"last":"D60","D0":23.1,"D1":34.3,"D7":79.3,"D30":115.4,"D60":159.4,"D90":null,"D180":224.5,"D360":278.6},{"w":"03.06–09.06","spend":5801,"users":7322,"last":"D60","D0":27.0,"D1":41.0,"D7":62.9,"D30":94.4,"D60":113.6,"D90":null,"D180":160.0,"D360":198.6},{"w":"10.06–16.06","spend":9167,"users":10750,"last":"D60","D0":22.0,"D1":35.1,"D7":49.2,"D30":64.5,"D60":75.7,"D90":null,"D180":106.7,"D360":132.4},{"w":"17.06–23.06","spend":20834,"users":6812,"last":"D30","D0":6.9,"D1":9.8,"D7":15.5,"D30":19.3,"D60":null,"D90":null,"D180":31.5,"D360":39.1},{"w":"24.06–30.06","spend":57724,"users":17034,"last":"D30","D0":4.8,"D1":6.8,"D7":10.1,"D30":14.1,"D60":null,"D90":null,"D180":22.9,"D360":28.5},{"w":"01.07–07.07","spend":28790,"users":5977,"last":"D30","D0":5.4,"D1":7.5,"D7":10.3,"D30":13.4,"D60":null,"D90":null,"D180":21.8,"D360":27.0},{"w":"08.07–14.07","spend":6369,"users":3222,"last":"D30","D0":8.6,"D1":11.3,"D7":15.6,"D30":19.1,"D60":null,"D90":null,"D180":31.2,"D360":38.7},{"w":"15.07–21.07","spend":4795,"users":3666,"last":"D7","D0":7.4,"D1":13.9,"D7":17.7,"D30":null,"D60":null,"D90":null,"D180":39.4,"D360":48.9},{"w":"22.07–28.07","spend":4902,"users":1730,"last":"D7","D0":8.1,"D1":10.7,"D7":14.3,"D30":null,"D60":null,"D90":null,"D180":31.9,"D360":39.6},{"w":"29.07–04.08","spend":3875,"users":1601,"last":"D7","D0":4.1,"D1":5.0,"D7":9.7,"D30":null,"D60":null,"D90":null,"D180":19.1,"D360":22.6},{"w":"05.08–11.08","spend":3164,"users":1349,"last":"D1","D0":5.6,"D1":10.3,"D7":null,"D30":null,"D60":null,"D90":null,"D180":31.2,"D360":38.7},{"w":"12.08–18.08","spend":3563,"users":1031,"last":"D0","D0":5.5,"D1":null,"D7":null,"D30":null,"D60":null,"D90":null,"D180":27.3,"D360":33.9}],"unityads_int":[{"w":"15.04–21.04","spend":83,"users":51,"last":"D90","D0":null,"D1":null,"D7":null,"D30":null,"D60":0.0,"D90":0.0,"D180":0.0,"D360":0.0},{"w":"22.04–28.04","spend":253,"users":125,"last":"D90","D0":null,"D1":1.1,"D7":1.2,"D30":3.9,"D60":10.5,"D90":11.2,"D180":14.7,"D360":18.3},{"w":"29.04–05.05","spend":1338,"users":1558,"last":"D90","D0":1.2,"D1":1.9,"D7":2.3,"D30":5.1,"D60":13.4,"D90":18.0,"D180":18.9,"D360":23.4},{"w":"06.05–12.05","spend":1058,"users":1293,"last":"D90","D0":1.6,"D1":1.6,"D7":3.3,"D30":3.4,"D60":3.5,"D90":5.2,"D180":4.9,"D360":6.1},{"w":"13.05–19.05","spend":628,"users":466,"last":"D90","D0":1.0,"D1":3.6,"D7":18.0,"D30":24.7,"D60":24.8,"D90":24.8,"D180":34.9,"D360":43.3},{"w":"20.05–26.05","spend":994,"users":536,"last":"D60","D0":9.0,"D1":9.9,"D7":11.8,"D30":13.1,"D60":14.8,"D90":null,"D180":20.9,"D360":25.9},{"w":"27.05–02.06","spend":1263,"users":1091,"last":"D60","D0":18.5,"D1":37.8,"D7":50.3,"D30":55.2,"D60":59.7,"D90":null,"D180":84.1,"D360":104.4},{"w":"03.06–09.06","spend":2856,"users":1673,"last":"D60","D0":9.3,"D1":14.3,"D7":19.9,"D30":34.2,"D60":40.7,"D90":null,"D180":57.3,"D360":71.1},{"w":"10.06–16.06","spend":3994,"users":3289,"last":"D60","D0":4.7,"D1":8.9,"D7":22.3,"D30":31.1,"D60":40.9,"D90":null,"D180":57.7,"D360":71.6},{"w":"17.06–23.06","spend":20,"users":7,"last":"D30","D0":17.2,"D1":23.0,"D7":47.4,"D30":47.4,"D60":null,"D90":null,"D180":77.1,"D360":95.7},{"w":"24.06–30.06","spend":3,"users":7,"last":"D30","D0":null,"D1":0.3,"D7":4.1,"D30":6.3,"D60":null,"D90":null,"D180":10.2,"D360":12.7},{"w":"01.07–07.07","spend":1335,"users":319,"last":"D30","D0":24.5,"D1":25.3,"D7":29.2,"D30":30.2,"D60":null,"D90":null,"D180":49.2,"D360":61.0},{"w":"08.07–14.07","spend":1422,"users":835,"last":"D30","D0":9.5,"D1":12.6,"D7":20.8,"D30":25.4,"D60":null,"D90":null,"D180":41.3,"D360":51.3},{"w":"15.07–21.07","spend":2687,"users":3326,"last":"D7","D0":5.0,"D1":8.7,"D7":13.3,"D30":null,"D60":null,"D90":null,"D180":29.5,"D360":36.6},{"w":"22.07–28.07","spend":3120,"users":2495,"last":"D7","D0":4.8,"D1":8.8,"D7":13.9,"D30":null,"D60":null,"D90":null,"D180":31.0,"D360":38.4},{"w":"29.07–04.08","spend":1761,"users":1272,"last":"D7","D0":2.3,"D1":5.9,"D7":16.0,"D30":null,"D60":null,"D90":null,"D180":35.5,"D360":44.1},{"w":"05.08–11.08","spend":1268,"users":732,"last":"D1","D0":2.5,"D1":2.9,"D7":null,"D30":null,"D60":null,"D90":null,"D180":10.0,"D360":12.4},{"w":"12.08–18.08","spend":735,"users":457,"last":"D0","D0":2.0,"D1":null,"D7":null,"D30":null,"D60":null,"D90":null,"D180":10.1,"D360":12.5}],"moloco_int":[{"w":"17.06–23.06","spend":2657,"users":1562,"last":"D30","D0":0.9,"D1":1.4,"D7":6.1,"D30":8.8,"D60":null,"D90":null,"D180":14.4,"D360":17.9},{"w":"24.06–30.06","spend":15127,"users":3564,"last":"D30","D0":13.3,"D1":15.0,"D7":18.1,"D30":21.9,"D60":null,"D90":null,"D180":35.6,"D360":44.2},{"w":"01.07–07.07","spend":13989,"users":2753,"last":"D30","D0":3.3,"D1":4.3,"D7":8.3,"D30":11.8,"D60":null,"D90":null,"D180":19.3,"D360":23.9},{"w":"08.07–14.07","spend":13875,"users":3089,"last":"D30","D0":2.3,"D1":2.9,"D7":4.7,"D30":7.6,"D60":null,"D90":null,"D180":12.4,"D360":15.4},{"w":"15.07–21.07","spend":6921,"users":1569,"last":"D7","D0":3.0,"D1":5.2,"D7":10.5,"D30":null,"D60":null,"D90":null,"D180":23.4,"D360":29.0},{"w":"22.07–28.07","spend":500,"users":156,"last":"D7","D0":2.4,"D1":5.3,"D7":6.8,"D30":null,"D60":null,"D90":null,"D180":15.2,"D360":18.9}],"Apple Search Ads":[{"w":"27.05–02.06","spend":2,"users":15,"last":"D60","D0":4.0,"D1":63.7,"D7":63.7,"D30":63.7,"D60":63.7,"D90":null,"D180":89.7,"D360":111.3},{"w":"03.06–09.06","spend":1659,"users":4808,"last":"D60","D0":48.9,"D1":67.0,"D7":109.2,"D30":143.0,"D60":157.5,"D90":null,"D180":221.9,"D360":275.4},{"w":"10.06–16.06","spend":2255,"users":6846,"last":"D60","D0":28.4,"D1":47.3,"D7":62.0,"D30":115.6,"D60":136.4,"D90":null,"D180":192.2,"D360":238.5},{"w":"17.06–23.06","spend":3898,"users":9439,"last":"D30","D0":24.8,"D1":36.5,"D7":49.8,"D30":62.1,"D60":null,"D90":null,"D180":101.2,"D360":125.6},{"w":"24.06–30.06","spend":5182,"users":8898,"last":"D30","D0":11.5,"D1":21.8,"D7":32.1,"D30":63.0,"D60":null,"D90":null,"D180":102.6,"D360":127.4},{"w":"01.07–07.07","spend":4470,"users":5848,"last":"D30","D0":16.9,"D1":23.1,"D7":34.4,"D30":49.2,"D60":null,"D90":null,"D180":80.2,"D360":99.5},{"w":"08.07–14.07","spend":4508,"users":6782,"last":"D30","D0":12.8,"D1":15.9,"D7":30.4,"D30":45.5,"D60":null,"D90":null,"D180":74.2,"D360":92.0},{"w":"15.07–21.07","spend":4183,"users":6937,"last":"D7","D0":15.1,"D1":24.4,"D7":33.0,"D30":null,"D60":null,"D90":null,"D180":73.5,"D360":91.2},{"w":"22.07–28.07","spend":3022,"users":5396,"last":"D7","D0":21.2,"D1":27.9,"D7":42.4,"D30":null,"D60":null,"D90":null,"D180":94.3,"D360":117.1},{"w":"29.07–04.08","spend":3103,"users":4798,"last":"D7","D0":7.7,"D1":10.5,"D7":16.6,"D30":null,"D60":null,"D90":null,"D180":36.9,"D360":45.8},{"w":"05.08–11.08","spend":2927,"users":4024,"last":"D1","D0":5.6,"D1":11.2,"D7":null,"D30":null,"D60":null,"D90":null,"D180":38.2,"D360":47.4},{"w":"12.08–18.08","spend":2201,"users":2604,"last":"D0","D0":5.8,"D1":null,"D7":null,"D30":null,"D60":null,"D90":null,"D180":28.6,"D360":35.6}]},"Android":{"googleadwords_int":[{"w":"15.04–21.04","spend":1740,"users":9798,"last":"D90","D0":19.6,"D1":27.0,"D7":41.2,"D30":70.6,"D60":101.2,"D90":134.2,"D180":145.1,"D360":182.1},{"w":"22.04–28.04","spend":4081,"users":18454,"last":"D90","D0":6.3,"D1":11.3,"D7":19.8,"D30":34.4,"D60":47.9,"D90":57.2,"D180":68.7,"D360":86.2},{"w":"29.04–05.05","spend":6443,"users":19696,"last":"D90","D0":4.9,"D1":9.1,"D7":10.7,"D30":13.3,"D60":16.2,"D90":18.0,"D180":23.3,"D360":29.2},{"w":"06.05–12.05","spend":5737,"users":14595,"last":"D90","D0":5.1,"D1":9.3,"D7":17.0,"D30":25.5,"D60":32.3,"D90":34.6,"D180":46.3,"D360":58.1},{"w":"13.05–19.05","spend":3575,"users":10638,"last":"D90","D0":4.0,"D1":6.0,"D7":9.6,"D30":15.8,"D60":18.1,"D90":21.3,"D180":26.0,"D360":32.6},{"w":"20.05–26.05","spend":6822,"users":45151,"last":"D60","D0":20.4,"D1":30.4,"D7":47.6,"D30":66.7,"D60":76.0,"D90":null,"D180":108.9,"D360":136.6},{"w":"27.05–02.06","spend":13693,"users":173227,"last":"D60","D0":30.7,"D1":45.7,"D7":66.9,"D30":89.1,"D60":102.6,"D90":null,"D180":147.1,"D360":184.6},{"w":"03.06–09.06","spend":19853,"users":187724,"last":"D60","D0":15.3,"D1":22.7,"D7":35.7,"D30":51.9,"D60":59.7,"D90":null,"D180":85.5,"D360":107.3},{"w":"10.06–16.06","spend":23373,"users":191542,"last":"D60","D0":9.5,"D1":14.6,"D7":23.3,"D30":33.0,"D60":37.5,"D90":null,"D180":53.7,"D360":67.4},{"w":"17.06–23.06","spend":18619,"users":169054,"last":"D30","D0":8.4,"D1":12.1,"D7":27.5,"D30":37.4,"D60":null,"D90":null,"D180":62.3,"D360":78.2},{"w":"24.06–30.06","spend":19451,"users":221455,"last":"D30","D0":8.9,"D1":14.6,"D7":22.5,"D30":34.8,"D60":null,"D90":null,"D180":57.8,"D360":72.6},{"w":"01.07–07.07","spend":13085,"users":117647,"last":"D30","D0":11.6,"D1":24.3,"D7":36.7,"D30":50.8,"D60":null,"D90":null,"D180":84.5,"D360":106.1},{"w":"08.07–14.07","spend":8039,"users":127432,"last":"D30","D0":13.9,"D1":23.6,"D7":41.7,"D30":52.4,"D60":null,"D90":null,"D180":87.2,"D360":109.4},{"w":"15.07–21.07","spend":3844,"users":93915,"last":"D7","D0":27.0,"D1":38.4,"D7":69.6,"D30":null,"D60":null,"D90":null,"D180":163.9,"D360":205.8},{"w":"22.07–28.07","spend":6740,"users":122912,"last":"D7","D0":5.5,"D1":9.0,"D7":17.9,"D30":null,"D60":null,"D90":null,"D180":42.1,"D360":52.9},{"w":"29.07–04.08","spend":5331,"users":81800,"last":"D7","D0":7.9,"D1":13.6,"D7":23.0,"D30":null,"D60":null,"D90":null,"D180":54.1,"D360":67.9},{"w":"05.08–11.08","spend":5122,"users":82027,"last":"D1","D0":6.1,"D1":12.2,"D7":null,"D30":null,"D60":null,"D90":null,"D180":46.9,"D360":58.9},{"w":"12.08–18.08","spend":3590,"users":72347,"last":"D0","D0":11.3,"D1":null,"D7":null,"D30":null,"D60":null,"D90":null,"D180":69.1,"D360":86.7}],"Facebook Ads":[{"w":"15.04–21.04","spend":1047,"users":5946,"last":"D90","D0":42.8,"D1":85.8,"D7":130.6,"D30":210.0,"D60":264.8,"D90":316.7,"D180":379.4,"D360":476.2},{"w":"22.04–28.04","spend":3447,"users":6246,"last":"D90","D0":9.5,"D1":12.6,"D7":16.7,"D30":24.8,"D60":31.0,"D90":34.7,"D180":44.4,"D360":55.8},{"w":"29.04–05.05","spend":5742,"users":9072,"last":"D90","D0":3.5,"D1":5.0,"D7":11.4,"D30":17.6,"D60":20.3,"D90":22.2,"D180":29.0,"D360":36.5},{"w":"06.05–12.05","spend":6066,"users":5966,"last":"D90","D0":4.0,"D1":9.5,"D7":17.7,"D30":38.3,"D60":39.6,"D90":42.6,"D180":56.8,"D360":71.2},{"w":"13.05–19.05","spend":2359,"users":1193,"last":"D90","D0":1.7,"D1":2.9,"D7":3.0,"D30":3.3,"D60":4.6,"D90":4.7,"D180":6.6,"D360":8.3},{"w":"20.05–26.05","spend":3534,"users":12375,"last":"D60","D0":17.3,"D1":29.0,"D7":54.0,"D30":76.4,"D60":85.3,"D90":null,"D180":122.2,"D360":153.3},{"w":"27.05–02.06","spend":6859,"users":31242,"last":"D60","D0":35.9,"D1":47.9,"D7":76.6,"D30":101.2,"D60":122.6,"D90":null,"D180":175.7,"D360":220.5},{"w":"03.06–09.06","spend":10164,"users":17446,"last":"D60","D0":11.2,"D1":15.8,"D7":24.2,"D30":33.8,"D60":37.6,"D90":null,"D180":53.9,"D360":67.6},{"w":"10.06–16.06","spend":12408,"users":34635,"last":"D60","D0":10.5,"D1":14.2,"D7":20.9,"D30":31.4,"D60":35.3,"D90":null,"D180":50.6,"D360":63.5},{"w":"17.06–23.06","spend":22895,"users":163109,"last":"D30","D0":3.7,"D1":6.0,"D7":9.2,"D30":13.8,"D60":null,"D90":null,"D180":23.0,"D360":28.9},{"w":"24.06–30.06","spend":12892,"users":75330,"last":"D30","D0":3.4,"D1":4.6,"D7":7.6,"D30":10.1,"D60":null,"D90":null,"D180":16.8,"D360":21.1},{"w":"01.07–07.07","spend":9408,"users":41560,"last":"D30","D0":5.4,"D1":6.6,"D7":9.6,"D30":12.9,"D60":null,"D90":null,"D180":21.4,"D360":26.9},{"w":"08.07–14.07","spend":4323,"users":32385,"last":"D30","D0":5.7,"D1":7.4,"D7":12.8,"D30":19.9,"D60":null,"D90":null,"D180":33.1,"D360":41.6},{"w":"15.07–21.07","spend":3037,"users":18661,"last":"D7","D0":4.4,"D1":7.3,"D7":10.5,"D30":null,"D60":null,"D90":null,"D180":24.7,"D360":31.0},{"w":"22.07–28.07","spend":4447,"users":18413,"last":"D7","D0":6.5,"D1":9.6,"D7":16.8,"D30":null,"D60":null,"D90":null,"D180":39.7,"D360":49.8},{"w":"29.07–04.08","spend":3886,"users":9703,"last":"D7","D0":6.5,"D1":9.8,"D7":13.9,"D30":null,"D60":null,"D90":null,"D180":32.7,"D360":41.1},{"w":"05.08–11.08","spend":2872,"users":8876,"last":"D1","D0":3.7,"D1":6.7,"D7":null,"D30":null,"D60":null,"D90":null,"D180":25.7,"D360":32.2},{"w":"12.08–18.08","spend":2369,"users":7974,"last":"D0","D0":9.2,"D1":null,"D7":null,"D30":null,"D60":null,"D90":null,"D180":56.4,"D360":70.7}],"applovin_int":[{"w":"24.06–30.06","spend":1482,"users":83,"last":"D30","D0":1.1,"D1":2.7,"D7":4.3,"D30":4.9,"D60":null,"D90":null,"D180":8.2,"D360":10.3},{"w":"01.07–07.07","spend":4500,"users":501,"last":"D30","D0":0.8,"D1":1.6,"D7":2.7,"D30":3.7,"D60":null,"D90":null,"D180":6.1,"D360":7.7},{"w":"08.07–14.07","spend":13619,"users":2293,"last":"D30","D0":0.5,"D1":0.9,"D7":2.3,"D30":3.9,"D60":null,"D90":null,"D180":6.5,"D360":8.2},{"w":"15.07–21.07","spend":11916,"users":5990,"last":"D7","D0":1.1,"D1":1.5,"D7":2.9,"D30":null,"D60":null,"D90":null,"D180":6.9,"D360":8.7},{"w":"22.07–28.07","spend":7774,"users":9754,"last":"D7","D0":1.2,"D1":2.4,"D7":3.5,"D30":null,"D60":null,"D90":null,"D180":8.2,"D360":10.3},{"w":"29.07–04.08","spend":6996,"users":15639,"last":"D7","D0":1.2,"D1":1.6,"D7":2.6,"D30":null,"D60":null,"D90":null,"D180":6.1,"D360":7.6},{"w":"05.08–11.08","spend":6974,"users":17836,"last":"D1","D0":1.8,"D1":2.9,"D7":null,"D30":null,"D60":null,"D90":null,"D180":11.1,"D360":13.9},{"w":"12.08–18.08","spend":5947,"users":13498,"last":"D0","D0":1.3,"D1":null,"D7":null,"D30":null,"D60":null,"D90":null,"D180":7.7,"D360":9.7}],"tiktokglobal_int":[{"w":"22.04–28.04","spend":1256,"users":2551,"last":"D90","D0":4.1,"D1":6.0,"D7":12.7,"D30":18.2,"D60":22.1,"D90":24.6,"D180":31.6,"D360":39.7},{"w":"29.04–05.05","spend":3758,"users":4371,"last":"D90","D0":5.4,"D1":7.4,"D7":11.6,"D30":15.5,"D60":17.8,"D90":19.3,"D180":25.5,"D360":31.9},{"w":"06.05–12.05","spend":6149,"users":4438,"last":"D90","D0":1.7,"D1":4.1,"D7":6.3,"D30":7.5,"D60":8.0,"D90":8.2,"D180":11.5,"D360":14.4},{"w":"13.05–19.05","spend":1925,"users":402,"last":"D90","D0":3.9,"D1":4.6,"D7":4.7,"D30":5.5,"D60":5.6,"D90":5.6,"D180":8.0,"D360":10.0},{"w":"20.05–26.05","spend":1736,"users":415,"last":"D60","D0":4.4,"D1":15.3,"D7":16.7,"D30":19.9,"D60":20.7,"D90":null,"D180":29.6,"D360":37.2},{"w":"27.05–02.06","spend":1409,"users":5619,"last":"D60","D0":29.8,"D1":44.3,"D7":69.2,"D30":88.0,"D60":102.6,"D90":null,"D180":147.0,"D360":184.5},{"w":"03.06–09.06","spend":2705,"users":8729,"last":"D60","D0":17.1,"D1":24.6,"D7":36.6,"D30":50.0,"D60":58.4,"D90":null,"D180":83.6,"D360":105.0},{"w":"10.06–16.06","spend":4427,"users":11651,"last":"D60","D0":14.1,"D1":18.3,"D7":36.2,"D30":54.7,"D60":59.9,"D90":null,"D180":85.9,"D360":107.8},{"w":"17.06–23.06","spend":3777,"users":5566,"last":"D30","D0":9.8,"D1":12.5,"D7":18.5,"D30":21.5,"D60":null,"D90":null,"D180":35.8,"D360":44.9},{"w":"24.06–30.06","spend":23244,"users":17464,"last":"D30","D0":3.6,"D1":4.4,"D7":7.0,"D30":9.2,"D60":null,"D90":null,"D180":15.4,"D360":19.3},{"w":"01.07–07.07","spend":9653,"users":11739,"last":"D30","D0":3.3,"D1":5.2,"D7":7.9,"D30":11.5,"D60":null,"D90":null,"D180":19.1,"D360":24.0},{"w":"08.07–14.07","spend":5190,"users":16966,"last":"D30","D0":4.3,"D1":7.1,"D7":10.3,"D30":17.6,"D60":null,"D90":null,"D180":29.2,"D360":36.7},{"w":"15.07–21.07","spend":6424,"users":23457,"last":"D7","D0":7.2,"D1":11.2,"D7":16.5,"D30":null,"D60":null,"D90":null,"D180":38.9,"D360":48.9},{"w":"22.07–28.07","spend":2544,"users":3101,"last":"D7","D0":2.2,"D1":3.7,"D7":11.9,"D30":null,"D60":null,"D90":null,"D180":27.9,"D360":35.0},{"w":"29.07–04.08","spend":2261,"users":4315,"last":"D7","D0":4.3,"D1":5.8,"D7":10.9,"D30":null,"D60":null,"D90":null,"D180":25.6,"D360":32.1},{"w":"05.08–11.08","spend":2745,"users":14078,"last":"D1","D0":2.4,"D1":4.0,"D7":null,"D30":null,"D60":null,"D90":null,"D180":15.5,"D360":19.5},{"w":"12.08–18.08","spend":1256,"users":2371,"last":"D0","D0":6.3,"D1":null,"D7":null,"D30":null,"D60":null,"D90":null,"D180":38.5,"D360":48.4}],"unityads_int":[{"w":"15.04–21.04","spend":69,"users":133,"last":"D90","D0":0.0,"D1":0.0,"D7":0.0,"D30":2.9,"D60":3.5,"D90":3.5,"D180":5.0,"D360":6.2},{"w":"22.04–28.04","spend":217,"users":294,"last":"D90","D0":5.9,"D1":5.9,"D7":11.3,"D30":112.8,"D60":120.9,"D90":120.9,"D180":173.2,"D360":217.4},{"w":"29.04–05.05","spend":369,"users":1139,"last":"D90","D0":1.0,"D1":1.0,"D7":2.3,"D30":3.0,"D60":12.1,"D90":22.5,"D180":17.3,"D360":21.7},{"w":"06.05–12.05","spend":743,"users":2447,"last":"D90","D0":0.7,"D1":0.7,"D7":4.8,"D30":7.2,"D60":8.2,"D90":8.3,"D180":11.8,"D360":14.8},{"w":"13.05–19.05","spend":612,"users":595,"last":"D90","D0":0.2,"D1":0.2,"D7":0.3,"D30":1.3,"D60":1.5,"D90":1.5,"D180":2.1,"D360":2.7},{"w":"20.05–26.05","spend":719,"users":646,"last":"D60","D0":5.0,"D1":5.5,"D7":7.0,"D30":7.9,"D60":8.0,"D90":null,"D180":11.5,"D360":14.4},{"w":"27.05–02.06","spend":1557,"users":2679,"last":"D60","D0":15.1,"D1":23.4,"D7":37.7,"D30":59.2,"D60":74.8,"D90":null,"D180":107.1,"D360":134.5},{"w":"03.06–09.06","spend":2929,"users":5122,"last":"D60","D0":4.6,"D1":7.0,"D7":12.8,"D30":20.6,"D60":25.2,"D90":null,"D180":36.1,"D360":45.3},{"w":"10.06–16.06","spend":3839,"users":11243,"last":"D60","D0":3.8,"D1":4.5,"D7":7.1,"D30":10.0,"D60":10.8,"D90":null,"D180":15.5,"D360":19.5},{"w":"17.06–23.06","spend":178,"users":303,"last":"D30","D0":7.5,"D1":8.4,"D7":10.0,"D30":10.6,"D60":null,"D90":null,"D180":17.6,"D360":22.1},{"w":"24.06–30.06","spend":10,"users":4,"last":"D30","D0":1.0,"D1":1.6,"D7":6.5,"D30":15.5,"D60":null,"D90":null,"D180":25.7,"D360":32.3},{"w":"01.07–07.07","spend":556,"users":254,"last":"D30","D0":20.1,"D1":20.8,"D7":25.4,"D30":33.3,"D60":null,"D90":null,"D180":55.3,"D360":69.4},{"w":"08.07–14.07","spend":1834,"users":2407,"last":"D30","D0":5.9,"D1":7.6,"D7":11.1,"D30":18.0,"D60":null,"D90":null,"D180":30.0,"D360":37.7},{"w":"15.07–21.07","spend":4101,"users":14696,"last":"D7","D0":6.3,"D1":8.8,"D7":12.3,"D30":null,"D60":null,"D90":null,"D180":29.0,"D360":36.4},{"w":"22.07–28.07","spend":1674,"users":8590,"last":"D7","D0":2.2,"D1":4.3,"D7":7.6,"D30":null,"D60":null,"D90":null,"D180":17.9,"D360":22.5},{"w":"29.07–04.08","spend":1218,"users":3808,"last":"D7","D0":1.5,"D1":12.2,"D7":17.3,"D30":null,"D60":null,"D90":null,"D180":40.9,"D360":51.3},{"w":"05.08–11.08","spend":508,"users":1742,"last":"D1","D0":0.3,"D1":0.5,"D7":null,"D30":null,"D60":null,"D90":null,"D180":2.0,"D360":2.5},{"w":"12.08–18.08","spend":1266,"users":2223,"last":"D0","D0":1.2,"D1":null,"D7":null,"D30":null,"D60":null,"D90":null,"D180":7.1,"D360":8.9}],"moloco_int":[{"w":"29.07–04.08","spend":5765,"users":673,"last":"D7","D0":1.5,"D1":2.6,"D7":3.5,"D30":null,"D60":null,"D90":null,"D180":8.2,"D360":10.2},{"w":"05.08–11.08","spend":6933,"users":1301,"last":"D1","D0":0.3,"D1":0.6,"D7":null,"D30":null,"D60":null,"D90":null,"D180":2.2,"D360":2.7}]}};
+
+const NET_LABELS = {
+  googleadwords_int: "Google Ads",
+  "Facebook Ads": "Facebook Ads",
+  applovin_int: "AppLovin",
+  tiktokglobal_int: "TikTok",
+  unityads_int: "Unity Ads",
+  moloco_int: "Moloco",
+  "Apple Search Ads": "Apple Search Ads",
+};
+
+const COLS = ["D0","D1","D7","D30","D60","D90","D180","D360"];
+
+function order(day){ return COLS.indexOf(day); }
+
+function cellClass(platform, col, val){
+  const t = TARGETS[platform][col];
+  const pct = val/t*100;
+  if(pct>=100) return "cell-good";
+  if(pct>=50) return "cell-warn";
+  return "cell-bad";
+}
+
+function buildTable(platform, netKey){
+  const allNets = netKey === "__all__";
+  const rows = allNets ? DATA[platform] : NETWORK_DATA[platform][netKey];
+  const showUsers = !allNets;
+  let html = "<thead><tr><th>Платформа</th><th>Неделя</th><th>Spend</th>";
+  if(showUsers) html += "<th>Установки</th>";
+  COLS.forEach(c=> html += `<th>${c}</th>`);
+  html += "</tr></thead><tbody>";
+  rows.forEach(r=>{
+    html += `<tr class="plat-${platform.toLowerCase()}"><td>${platform}</td><td>${r.w}</td><td class="spend">$${r.spend==null?'—':r.spend.toLocaleString()}</td>`;
+    if(showUsers) html += `<td class="users-col">${r.users==null?'—':r.users.toLocaleString()}</td>`;
+    COLS.forEach(c=>{
+      const val = r[c];
+      const isForecast = order(c) > order(r.last);
+      if(val===null || val===undefined){
+        html += `<td>—</td>`;
+      } else {
+        const cls = cellClass(platform, c, val);
+        const content = val.toFixed(1)+"%";
+        html += `<td class="${cls}"><span class="${isForecast?'fc':''}">${content}</span></td>`;
+      }
+    });
+    html += "</tr>";
+  });
+  html += "</tbody>";
+  document.getElementById(`tbl-${platform.toLowerCase()}`).innerHTML = html;
+}
+
+function onNetChange(platform, value){
+  buildTable(platform, value);
+}
+
+function initSelector(platform){
+  const sel = document.getElementById(`sel-${platform.toLowerCase()}`);
+  let html = `<option value="__all__">Все сетки (агрегат)</option>`;
+  Object.keys(NETWORK_DATA[platform]).forEach(net=>{
+    html += `<option value="${net}">${NET_LABELS[net] || net}</option>`;
+  });
+  sel.innerHTML = html;
+}
+
+initSelector("Android");
+initSelector("iOS");
+buildTable("Android", "__all__");
+buildTable("iOS", "__all__");
+</script>
